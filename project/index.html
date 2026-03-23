@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="color-scheme" content="light dark">
+    
+    <!-- Primary Meta Tags -->
+    <title>Neptun-Lite - Egyszerű Neptun naptár</title>
+    <meta name="title" content="Neptun-Lite - Egyszerű Neptun naptár">
+    <meta name="description" content="Gyors, letisztult és mobilbarát naptáralkalmazás Neptun órarendekhez. Kövesd az óráidat egyszerűen, akár offline is a PWA támogatással.">
+    <meta name="keywords" content="neptun, naptár, órarend, egyetem, pwa, offline">
+    <meta name="author" content="Neptun-Lite Team">
+    <link rel="canonical" href="https://neptunlite.rf.gd/">
+    
+    <!-- OpenGraph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://neptunlite.rf.gd/">
+    <meta property="og:title" content="Neptun-Lite - Neptun naptár egyszerűen">
+    <meta property="og:description" content="Gyors, letisztult és mobilbarát naptáralkalmazás Neptun órarendekhez.">
+    <meta property="og:image" content="https://neptunlite.rf.gd/screenshots/og-image.webp">
+    <meta property="og:image:type" content="image/webp">
+    <meta property="og:locale" content="hu_HU">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://neptunlite.rf.gd/">
+    <meta property="twitter:title" content="Neptun-Lite - Neptun naptár egyszerűen">
+    <meta property="twitter:description" content="Gyors, letisztult és mobilbarát naptáralkalmazás Neptun órarendekhez.">
+    <meta property="twitter:image" content="https://neptunlite.rf.gd/screenshots/og-image.webp">
+    <meta property="twitter:image:type" content="image/webp">
+    
+    <!-- Apple -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Neptun-Lite">
+    
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Neptun-Lite",
+        "operatingSystem": "Web, Android, iOS",
+        "applicationCategory": "EducationalApplication",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "HUF"
+        },
+        "description": "Egyszerű, gyors és mobilbarát naptáralkalmazás a Neptun rendszer órarendjeihez. Kövesd az óráidat bárhol, akár offline is.",
+        "url": "https://neptunlite.rf.gd/",
+        "softwareVersion": "2.0",
+        "inLanguage": "hu"
+    }
+    </script>
+    
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="apple-touch-icon" href="icons/icon-192.webp">
+
+    <!-- HTTP/2 Preload for critical resources -->
+    <link rel="preload" href="styles.css" as="style">
+    <link rel="preload" href="db.js" as="script">
+    <link rel="preload" href="ics-parser.js" as="script">
+    <link rel="preload" href="app.js" as="script">
+
+    <!-- DNS prefetch for external resources -->
+    <link rel="dns-prefetch" href="//neptunlite.rf.gd">
+    
+    <!-- Critical CSS -->
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { font-size: 16px; }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg, #f5f5f7);
+            color: var(--text, #1a1a1a);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        :root {
+            --bg: #f5f5f7;
+            --surface: #ffffff;
+            --text: #1a1a1a;
+            --text-secondary: #6b6b6b;
+            --primary: #6366f1;
+            --border: #e5e5e5;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0f0f11;
+                --surface: #1a1a1d;
+                --text: #fafafa;
+                --text-secondary: #a1a1aa;
+                --border: #27272a;
+            }
+            body {
+                background: #0f0f11;
+                color: #fafafa;
+            }
+        }
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+        }
+    </style>
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Loading State -->
+    <div id="loading" class="loading" hidden>
+        <div class="loading-spinner"></div>
+        <span class="loading-text">Betöltés...</span>
+    </div>
+
+    <!-- App Container -->
+    <div id="app" class="app" hidden>
+        <!-- Error Message Container -->
+        <div id="error-container" class="error-container" hidden>
+            <div class="error-content">
+                <svg class="error-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <span id="error-message" class="error-text"></span>
+                <button id="error-dismiss" class="error-dismiss" aria-label="Bezárás">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Header -->
+        <header class="header">
+            <div class="header-start">
+                <img src="icons/icon-192.webp" alt="" class="logo" width="32" height="32" aria-hidden="true">
+                <h1 class="app-title">Neptun-Lite</h1>
+            </div>
+            <nav class="header-actions">
+                <button id="add-calendar-btn" class="icon-btn" aria-label="Naptár hozzáadása" title="Naptár hozzáadása">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 8v8M8 12h8"/>
+                    </svg>
+                </button>
+                <button id="manage-calendars-btn" class="icon-btn" aria-label="Naptárak kezelése" title="Naptárak kezelése">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                </button>
+            
+                <button id="install-pwa-btn" class="icon-btn" aria-label="Telepítés" title="Neptun-Lite telepítése" hidden>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                </button>
+            </nav>
+        </header>
+
+        <!-- View Toggle -->
+        <div class="view-toggle">
+            <button class="view-btn active" data-view="day" aria-pressed="true">Nap</button>
+            <button class="view-btn" data-view="week" aria-pressed="false">Hét</button>
+            <button class="view-btn" data-view="month" aria-pressed="false">Hónap</button>
+        </div>
+
+        <!-- Calendar Navigation (Centered) -->
+        <div class="calendar-nav">
+            <button id="prev-period" class="nav-btn" aria-label="Előző">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M15 18l-6-6 6-6"/>
+                </svg>
+            </button>
+            <h2 id="current-period" class="period-label"></h2>
+            <button id="next-period" class="nav-btn" aria-label="Következő">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 18l6-6-6-6"/>
+                </svg>
+            </button>
+            <button id="today-btn" class="today-btn">Ma</button>
+        </div>
+
+        <!-- Pull to Refresh Indicator -->
+        <div id="ptr-indicator" class="ptr-indicator">
+            <svg class="ptr-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 4v6h-6M1 20v-6h6"/>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+            </svg>
+            <span class="ptr-text">Húzd le a frissítéshez</span>
+        </div>
+
+        <!-- Main Content (Scrollable) -->
+        <main id="main-content" class="main-content">
+            <!-- Day View -->
+            <div id="day-view" class="view view-day active">
+                <div id="day-events" class="events-list"></div>
+                <div id="day-empty" class="empty-state" hidden>
+                    <svg width="64" height="64" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3">
+                        <circle cx="32" cy="32" r="28"/>
+                        <path d="M32 18v14l10 5"/>
+                    </svg>
+                    <p>Nincs óra ezen a napon</p>
+                </div>
+            </div>
+
+            <!-- Week View -->
+            <div id="week-view" class="view view-week" hidden>
+                <div class="week-grid" id="week-content"></div>
+            </div>
+
+            <!-- Month View -->
+            <div id="month-view" class="view view-month" hidden>
+                <div class="month-grid">
+                    <div class="month-header">
+                        <div>H</div><div>K</div><div>Sze</div><div>Cs</div><div>P</div><div>Szo</div><div>V</div>
+                    </div>
+                    <div id="month-content" class="month-content"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Active Event Timer Bar -->
+    <div id="event-timer-bar" class="event-timer-bar">
+        <div class="event-timer-content">
+            <div class="event-timer-info">
+                <div class="event-timer-name" id="event-timer-name">Esemény neve</div>
+                <div class="event-timer-label">Hátralévő idő:</div>
+            </div>
+            <div class="event-timer-countdown" id="event-timer-countdown">00:00:00</div>
+        </div>
+        <div class="event-timer-progress">
+            <div class="event-timer-progress-bar" id="event-timer-progress" style="width: 0%"></div>
+        </div>
+    </div>
+
+    <!-- Add Calendar Modal -->
+    <dialog id="add-calendar-modal" class="modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <header class="modal-header">
+                <h2>Új naptár hozzáadása</h2>
+                <button class="modal-close" aria-label="Bezárás">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </header>
+            <form id="add-calendar-form" class="modal-form">
+                <p class="modal-help">A naptárad megjelenítéséhez szükség van az ICS linkre. A Neptunból másold ki a naptár export URL-t.</p>
+                <div class="form-group">
+                    <label for="calendar-name">Naptár neve (opcionális)</label>
+                    <input type="text" id="calendar-name" placeholder="pl. XY egyetem BSc szak">
+                </div>
+                <div class="form-group">
+                    <label for="calendar-url">Neptun ICS URL *</label>
+                    <input type="url" id="calendar-url" required
+                           placeholder="https://neptun.[egyetem].hu/hallgato/api/Calendar/...">
+                </div>
+                <div class="form-group">
+                    <label for="calendar-color">Szín</label>
+                    <div class="color-picker">
+                        <button type="button" class="color-option active" data-color="#6366f1" style="background:#6366f1"></button>
+                        <button type="button" class="color-option" data-color="#8b5cf6" style="background:#8b5cf6"></button>
+                        <button type="button" class="color-option" data-color="#06b6d4" style="background:#06b6d4"></button>
+                        <button type="button" class="color-option" data-color="#10b981" style="background:#10b981"></button>
+                        <button type="button" class="color-option" data-color="#f59e0b" style="background:#f59e0b"></button>
+                        <button type="button" class="color-option" data-color="#ef4444" style="background:#ef4444"></button>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary modal-cancel">Mégse</button>
+                    <button type="submit" class="btn-primary">Hozzáadás</button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
+    <!-- Manage Calendars Modal -->
+    <dialog id="manage-calendars-modal" class="modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <header class="modal-header">
+                <h2>Naptárak kezelése</h2>
+                <button class="modal-close" aria-label="Bezárás">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </header>
+            <div class="modal-section">
+                <h3>Értesítések</h3>
+                <div class="settings-row">
+                    <div class="settings-info">
+                        <strong>Óra értesítések</strong>
+                        <p>Kapsz egy értesítést 15 perccel az órád előtt</p>
+                    </div>
+                    <button type="button" class="toggle-btn" id="notifications-toggle" aria-pressed="false">
+                        <span class="toggle-slider"></span>
+                    </button>
+                </div>
+                <div id="notification-warning" class="notification-warning" hidden>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    <span class="warning-text"></span>
+                </div>
+            </div>
+            <div id="calendars-list" class="calendars-list">
+                <!-- Calendar items injected here -->
+            </div>
+            <div id="manage-modal-install-prompt" class="install-prompt" hidden>
+                <div class="install-prompt-content">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    <div class="install-prompt-text">
+                        <strong>Telepítsd az appot!</strong>
+                        <p>Gyorsabb elérés és offline működés</p>
+                    </div>
+                    <button type="button" class="btn-primary" id="manage-modal-install-btn">Telepítés</button>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary modal-cancel">Bezárás</button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Edit Calendar Modal -->
+    <dialog id="edit-calendar-modal" class="modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <header class="modal-header">
+                <h2>Naptár szerkesztése</h2>
+                <button class="modal-close" aria-label="Bezárás">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </header>
+            <form id="edit-calendar-form" class="modal-form">
+                <input type="hidden" id="edit-calendar-id">
+                <div class="form-group">
+                    <label for="edit-calendar-name">Naptár neve</label>
+                    <input type="text" id="edit-calendar-name" placeholder="pl. XY egyetem BSc szak">
+                </div>
+                <div class="form-group">
+                    <label for="edit-calendar-url">Neptun ICS URL</label>
+                    <input type="url" id="edit-calendar-url" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-calendar-color">Szín</label>
+                    <div class="color-picker" id="edit-color-picker">
+                        <button type="button" class="color-option" data-color="#6366f1" style="background:#6366f1"></button>
+                        <button type="button" class="color-option" data-color="#8b5cf6" style="background:#8b5cf6"></button>
+                        <button type="button" class="color-option" data-color="#06b6d4" style="background:#06b6d4"></button>
+                        <button type="button" class="color-option" data-color="#10b981" style="background:#10b981"></button>
+                        <button type="button" class="color-option" data-color="#f59e0b" style="background:#f59e0b"></button>
+                        <button type="button" class="color-option" data-color="#ef4444" style="background:#ef4444"></button>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary modal-cancel">Mégse</button>
+                    <button type="submit" class="btn-primary">Mentés</button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
+    <!-- Event Details Modal -->
+    <dialog id="event-details-modal" class="modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <header class="modal-header">
+                <h2>Esemény részletei</h2>
+                <button class="modal-close" aria-label="Bezárás">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </header>
+            <div id="event-details-content" class="event-details-content">
+                <!-- Event details injected here -->
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary modal-cancel">Bezárás</button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- PWA Install Modal -->
+    <dialog id="pwa-install-modal" class="modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <header class="modal-header">
+                <h2>Neptun-Lite Telepítése</h2>
+                <button class="modal-close" aria-label="Bezárás">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </header>
+            <div class="pwa-install-content">
+                <p>Telepítsd a Neptun-Lite-ot a gyors hozzáféréshez!</p>
+                <ul class="pwa-benefits">
+                    <li>Azonnal elérhető a kezdőképernyőn</li>
+                    <li>Offline is működik</li>
+                    <li>Gyors betöltés</li>
+                    <li>Nincs böngésző sáv</li>
+                </ul>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" id="pwa-install-later">Később</button>
+                <button type="button" class="btn-primary" id="pwa-install-button">Telepítés</button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- First-Time Setup Modal -->
+    <dialog id="firsttime-setup-modal" class="modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <header class="modal-header">
+                <h2>Szia! Üdvözöl a Neptun-Lite!</h2>
+            </header>
+            <div class="firsttime-content">
+                <p class="firsttime-intro">A naptárad megjelenítéséhez szükség van a Neptun ICS linkedre!</p>
+
+                <div class="firsttime-steps">
+                    <h3>Így szerezheted meg:</h3>
+                    <ol>
+                        <li>Lépj be a <strong>Neptunba</strong></li>
+                        <li>Navigálj az <strong>Órarend / Naptár</strong> menübe</li>
+                        <li>Kattints a <strong>"Naptár export"</strong> gombra</li>
+                        <li>Másold ki a megjelenő <strong>linket</strong></li>
+                    </ol>
+                </div>
+                
+                <div class="form-group">
+                    <label for="firsttime-calendar-url">ICS URL beillesztése *</label>
+                    <input type="url" id="firsttime-calendar-url" required 
+                           placeholder="https://neptun.[egyetem].hu/hallgato/api/Calendar/...">
+                </div>
+                
+                <div class="form-group">
+                    <label for="firsttime-calendar-name">Naptár neve (opcionális)</label>
+                    <input type="text" id="firsttime-calendar-name" placeholder="pl. XY egyetem BSc szak">
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-primary" id="firsttime-submit">Naptár hozzáadása</button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Scripts -->
+    <script src="db.js"></script>
+    <script src="ics-parser.js"></script>
+    <script src="app.js" defer></script>
+    <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('SW registered:', reg.scope))
+                    .catch(err => console.error('SW registration failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>

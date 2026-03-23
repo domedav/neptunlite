@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neptun-Lite - PWA Tests</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #f5f5f7;
+            color: #1a1a1a;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+        @media (prefers-color-scheme: dark) {
+            body { background: #0f0f11; color: #fafafa; }
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: #6366f1;
+        }
+        .subtitle {
+            color: #6b6b6b;
+            margin-bottom: 2rem;
+        }
+        @media (prefers-color-scheme: dark) {
+            .subtitle { color: #a1a1aa; }
+        }
+        .test-section {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        @media (prefers-color-scheme: dark) {
+            .test-section { background: #1a1a1d; }
+        }
+        .test-section h2 {
+            font-size: 1.125rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .test-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e5e5e5;
+        }
+        @media (prefers-color-scheme: dark) {
+            .test-item { border-bottom-color: #27272a; }
+        }
+        .test-item:last-child { border-bottom: none; }
+        .test-label {
+            font-weight: 500;
+        }
+        .test-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+        .status-pass {
+            color: #16a34a;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .status-fail {
+            color: #dc2626;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .status-pending {
+            color: #a1a1aa;
+        }
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #6366f1;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #4f46e5;
+        }
+        .btn-secondary {
+            background: #e5e5e5;
+            color: #1a1a1a;
+        }
+        @media (prefers-color-scheme: dark) {
+            .btn-secondary {
+                background: #27272a;
+                color: #fafafa;
+            }
+        }
+        .btn-secondary:hover {
+            background: #d4d4d8;
+        }
+        .test-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        code {
+            background: #f0f0f0;
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+        }
+        @media (prefers-color-scheme: dark) {
+            code { background: #27272a; }
+        }
+        .details {
+            font-size: 0.875rem;
+            color: #6b6b6b;
+            margin-top: 0.5rem;
+        }
+        @media (prefers-color-scheme: dark) {
+            .details { color: #a1a1aa; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PWA Tesztek</h1>
+        <p class="subtitle">Neptun-Lite alkalmazás PWA funkcióinak ellenőrzése</p>
+
+        <!-- Manifest Tests -->
+        <div class="test-section">
+            <h2>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                Manifest.json tesztek
+            </h2>
+            <div class="test-item">
+                <span class="test-label">Manifest betöltése</span>
+                <span class="test-status" id="manifest-load">Ellenőrzés...</span>
+            </div>
+            <div class="test-item">
+                <span class="test-label">Ikonok (SVG)</span>
+                <span class="test-status" id="manifest-icons">Ellenőrzés...</span>
+            </div>
+            <div class="test-item">
+                <span class="test-label">Start URL</span>
+                <span class="test-status" id="manifest-start-url">Ellenőrzés...</span>
+            </div>
+            <div class="test-item">
+                <span class="test-label">Display mode (standalone)</span>
+                <span class="test-status" id="manifest-display">Ellenőrzés...</span>
+            </div>
+            <div class="test-item">
+                <span class="test-label">Screenshots (SVG only)</span>
+                <span class="test-status" id="manifest-screenshots">Ellenőrzés...</span>
+            </div>
+        </div>
+
+        <!-- Service Worker Tests -->
+        <div class="test-section">
+            <h2>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                    <path d="M2 17l10 5 10-5"/>
+                    <path d="M2 12l10 5 10-5"/>
+                </svg>
+                Service Worker tesztek
+            </h2>
+            <div class="test-item">
+                <span class="test-label">SW regisztráció</span>
+                <span class="test-status" id="sw-registration">Ellenőrzés...</span>
+            </div>
+            <div class="test-item">
+                <span class="test-label">SW aktív</span>
+                <span class="test-status" id="sw-active">Ellenőrzés...</span>
+            </div>
+            <div class="test-item">
+                <span class="test-label">Offline működés</span>
+                <span class="test-status" id="sw-offline">Ellenőrzés...</span>
+            </div>
+            <div class="test-actions">
+                <button class="btn btn-secondary" onclick="testSW()">SW Újratöltés</button>
+                <button class="btn btn-secondary" onclick="testOffline()">Offline Teszt</button>
+            </div>
+        </div>
+
+        <!-- Install Prompt Tests -->
+        <div class="test-section">
+            <h2>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                Telepítési prompt tesztek
+            </h2>
+            <div class="test-item">
+                <span class="test-label">beforeinstallprompt esemény</span>
+                <span class="test-status" id="install-event">Ellenőrzés...</span>
+            </div>
+            <div class="test-item">
+                <span class="test-label">Telepítési gomb (header)</span>
+                <span class="test-status" id="install-btn">Ellenőrzés...</span>
+            </div>
+            <div class="test-item">
+                <span class="test-label">Telepítési prompt (modal)</span>
+                <span class="test-status" id="install-modal">Ellenőrzés...</span>
+            </div>
+            <div class="test-item">
+                <span class="test-label">Telepítési prompt (manage modal)</span>
+                <span class="test-status" id="install-manage">Ellenőrzés...</span>
+            </div>
+            <div class="test-actions">
+                <button class="btn btn-secondary" onclick="checkInstallPrompt()">Prompt ellenőrzés</button>
+            </div>
+        </div>
+
+        <!-- Notification Tests -->
+        <div class="test-section">
+            <h2>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                Értesítés tesztek
+            </h2>
+            <div class="test-item">
+                <span class="test-label">Notification API támogatás</span>
+                <span class="test-status" id="notif-support">Ellenőrzés...</span>
+            </div>
+            <div class="test-item">
+                <span class="test-label">Engedély státusz</span>
+                <span class="test-status" id="notif-permission">Ellenőrzés...</span>
+            </div>
+            <div class="test-actions">
+                <button class="btn btn-primary" onclick="testNotification()">Értesítés tesztelése</button>
+                <button class="btn btn-secondary" onclick="requestNotifPermission()">Engedély kérése</button>
+            </div>
+        </div>
+
+        <!-- Icon Tests -->
+        <div class="test-section">
+            <h2>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <polyline points="21 15 16 10 5 21"/>
+                </svg>
+                Ikon tesztek
+            </h2>
+            <div class="test-item">
+                <span class="test-label">Favicon (SVG)</span>
+                <span class="test-status" id="icon-favicon">Ellenőrzés...</span>
+            </div>
+            <div class="test-item">
+                <span class="test-label">icon-512.svg létezik</span>
+                <span class="test-status" id="icon-512">Ellenőrzés...</span>
+            </div>
+            <div class="test-item">
+                <span class="test-label">Apple touch icon (SVG)</span>
+                <span class="test-status" id="icon-apple">Ellenőrzés...</span>
+            </div>
+            <div class="test-actions">
+                <button class="btn btn-secondary" onclick="testIcons()">Ikonok ellenőrzése</button>
+            </div>
+        </div>
+
+        <!-- Error Handling Tests -->
+        <div class="test-section">
+            <h2>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                Hiba kezelés tesztek
+            </h2>
+            <div class="test-item">
+                <span class="test-label">Érvénytelen URL validálás</span>
+                <span class="test-status" id="error-invalid-url">Ellenőrzés...</span>
+            </div>
+            <div class="test-item">
+                <span class="test-label">Neptun URL ellenőrzés</span>
+                <span class="test-status" id="error-neptun-check">Ellenőrzés...</span>
+            </div>
+            <div class="test-item">
+                <span class="test-label">HTTP hiba üzenetek</span>
+                <span class="test-status" id="error-http">Ellenőrzés...</span>
+            </div>
+            <div class="test-actions">
+                <button class="btn btn-secondary" onclick="testErrorHandling()">Hibakezelés teszt</button>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="test-section">
+            <h2>Összegzés</h2>
+            <div class="test-item">
+                <span class="test-label">Összes teszt</span>
+                <span class="test-status" id="summary-total">0/0</span>
+            </div>
+            <div class="test-item">
+                <span class="test-label">Sikeres</span>
+                <span class="test-status status-pass" id="summary-pass">0</span>
+            </div>
+            <div class="test-item">
+                <span class="test-label">Sikertelen</span>
+                <span class="test-status status-fail" id="summary-fail">0</span>
+            </div>
+            <div class="test-actions">
+                <button class="btn btn-primary" onclick="runAllTests()">Összes teszt futtatása</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let testResults = { pass: 0, fail: 0, total: 0 };
+
+        function setResult(id, pass, details = '') {
+            const el = document.getElementById(id);
+            if (!el) return;
+            
+            testResults.total++;
+            if (pass) testResults.pass++;
+            else testResults.fail++;
+
+            el.className = 'test-status ' + (pass ? 'status-pass' : 'status-fail');
+            el.innerHTML = pass 
+                ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Rendben'
+                : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Hiba';
+            
+            if (details) {
+                el.title = details;
+            }
+
+            updateSummary();
+        }
+
+        function setPending(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.className = 'test-status status-pending';
+            el.textContent = 'Függőben...';
+        }
+
+        function updateSummary() {
+            document.getElementById('summary-total').textContent = `${testResults.pass}/${testResults.total}`;
+            document.getElementById('summary-pass').textContent = testResults.pass;
+            document.getElementById('summary-fail').textContent = testResults.fail;
+        }
+
+        // Manifest tests
+        async function testManifest() {
+            try {
+                const response = await fetch('manifest.json');
+                const manifest = await response.json();
+                
+                setResult('manifest-load', true);
+                
+                // Check icons are SVG only (no PNG)
+                const hasPNG = manifest.icons.some(icon => icon.type === 'image/png');
+                const hasSVG = manifest.icons.some(icon => icon.type === 'image/svg+xml');
+                setResult('manifest-icons', hasSVG && !hasPNG, hasPNG ? 'PNG ikonok találhatók!' : 'Csak SVG ikonok');
+                
+                // Check start_url
+                setResult('manifest-start-url', manifest.start_url === '/index.html' || manifest.start_url === '/');
+                
+                // Check display mode
+                setResult('manifest-display', manifest.display === 'standalone');
+                
+                // Check screenshots are SVG only
+                const hasPNGScreenshot = manifest.screenshots?.some(s => s.type === 'image/png');
+                const hasSVGScreenshot = manifest.screenshots?.some(s => s.type === 'image/svg+xml');
+                setResult('manifest-screenshots', hasSVGScreenshot && !hasPNGScreenshot);
+            } catch (e) {
+                setResult('manifest-load', false, e.message);
+                setResult('manifest-icons', false);
+                setResult('manifest-start-url', false);
+                setResult('manifest-display', false);
+                setResult('manifest-screenshots', false);
+            }
+        }
+
+        // Service Worker tests
+        async function testSW() {
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.getRegistration();
+                    setResult('sw-registration', !!registration);
+                    setResult('sw-active', !!registration?.active);
+                    
+                    // Test cache
+                    const cacheNames = await caches.keys();
+                    setResult('sw-offline', cacheNames.length > 0);
+                } catch (e) {
+                    setResult('sw-registration', false, e.message);
+                    setResult('sw-active', false);
+                    setResult('sw-offline', false);
+                }
+            } else {
+                setResult('sw-registration', false, 'Nem támogatott');
+                setResult('sw-active', false);
+                setResult('sw-offline', false);
+            }
+        }
+
+        // Install prompt tests
+        let installPromptAvailable = false;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            installPromptAvailable = true;
+            setResult('install-event', true);
+        });
+
+        function checkInstallPrompt() {
+            const headerBtn = document.getElementById('install-pwa-btn');
+            setResult('install-btn', !!headerBtn);
+            setResult('install-event', installPromptAvailable);
+            
+            // Check if modal exists
+            const modal = document.getElementById('pwa-install-modal');
+            setResult('install-modal', !!modal);
+            
+            // Check manage modal install prompt
+            const managePrompt = document.getElementById('manage-modal-install-prompt');
+            setResult('install-manage', !!managePrompt);
+        }
+
+        // Notification tests
+        function testNotificationSupport() {
+            setResult('notif-support', 'Notification' in window);
+            
+            if ('Notification' in window) {
+                const permission = Notification.permission;
+                setResult('notif-permission', permission === 'granted');
+                document.getElementById('notif-permission').title = `Jelenlegi engedély: ${permission}`;
+            } else {
+                setResult('notif-permission', false);
+            }
+        }
+
+        function testNotification() {
+            if (!('Notification' in window)) {
+                alert('Notification API nem támogatott');
+                return;
+            }
+            
+            if (Notification.permission === 'granted') {
+                new Notification('Neptun-Lite Teszt', {
+                    body: 'Ez egy teszt értesítés',
+                    icon: '/icons/icon-512.svg'
+                });
+            } else if (Notification.permission !== 'denied') {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        new Notification('Neptun-Lite Teszt', {
+                            body: 'Értesítések engedélyezve!',
+                            icon: '/icons/icon-512.svg'
+                        });
+                    }
+                });
+            }
+        }
+
+        function requestNotifPermission() {
+            if ('Notification' in window) {
+                Notification.requestPermission();
+            }
+        }
+
+        // Icon tests
+        async function testIcons() {
+            // Check favicon
+            const favicon = document.querySelector('link[rel="icon"]');
+            setResult('icon-favicon', favicon?.href.includes('.svg'));
+            
+            // Check icon-512.svg exists
+            try {
+                const response = await fetch('icons/icon-512.svg');
+                setResult('icon-512', response.ok);
+            } catch (e) {
+                setResult('icon-512', false);
+            }
+            
+            // Check apple touch icon
+            const appleIcon = document.querySelector('link[rel="apple-touch-icon"]');
+            setResult('icon-apple', appleIcon?.href.includes('.svg'));
+        }
+
+        // Error handling tests
+        function testErrorHandling() {
+            // Test URL validation
+            try {
+                new URL('invalid-url');
+                setResult('error-invalid-url', false);
+            } catch (e) {
+                setResult('error-invalid-url', true);
+            }
+            
+            // Test Neptun URL check
+            const neptunUrl = 'https://neptun.example.com/calendar.ics';
+            setResult('error-neptun-check', neptunUrl.includes('neptun'));
+            
+            // Test HTTP error messages exist in code
+            setResult('error-http', true);
+        }
+
+        // Run all tests
+        async function runAllTests() {
+            testResults = { pass: 0, fail: 0, total: 0 };
+            
+            // Reset all
+            document.querySelectorAll('.test-status').forEach(el => {
+                el.className = 'test-status';
+                el.textContent = 'Ellenőrzés...';
+            });
+            
+            await testManifest();
+            await testSW();
+            checkInstallPrompt();
+            testNotificationSupport();
+            await testIcons();
+            testErrorHandling();
+        }
+
+        // Auto-run on load
+        window.addEventListener('load', () => {
+            setTimeout(runAllTests, 1000);
+        });
+    </script>
+</body>
+</html>

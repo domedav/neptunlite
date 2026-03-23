@@ -1,0 +1,116 @@
+{
+    "name": "Neptun-Lite – Egyetemi Naptár",
+    "short_name": "Neptun-Lite",
+    "description": "Gyors, offline-képes naptáralkalmazás magyar egyetemistáknak. Több naptár támogatás, értesítések, sötét mód.",
+    "start_url": "/index.html",
+    "scope": "/",
+    "display": "standalone",
+    "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+    "orientation": "portrait-primary",
+    "background_color": "#f5f5f7",
+    "theme_color": "#6366f1",
+    "categories": ["education", "productivity", "utilities", "calendar"],
+    "lang": "hu",
+    "dir": "ltr",
+    "icons": [
+        {
+            "src": "icons/icon-192.webp",
+            "sizes": "192x192",
+            "type": "image/webp",
+            "purpose": "any"
+        },
+        {
+            "src": "icons/icon-512.webp",
+            "sizes": "512x512",
+            "type": "image/webp",
+            "purpose": "any"
+        },
+        {
+            "src": "icons/shortcut-today.webp",
+            "sizes": "96x96",
+            "type": "image/webp",
+            "purpose": "any"
+        },
+        {
+            "src": "icons/shortcut-url.webp",
+            "sizes": "96x96",
+            "type": "image/webp",
+            "purpose": "any"
+        }
+    ],
+    "screenshots": [
+        {
+            "src": "screenshots/og-image.webp",
+            "sizes": "1200x630",
+            "type": "image/webp",
+            "form_factor": "wide",
+            "label": "Neptun-Lite főképernyő"
+        },
+        {
+            "src": "screenshots/screenshot1.webp",
+            "sizes": "1080x1920",
+            "type": "image/webp",
+            "form_factor": "narrow",
+            "label": "Neptun-Lite főképernyő - Napi nézet"
+        },
+        {
+            "src": "screenshots/screenshot2.webp",
+            "sizes": "1080x1920",
+            "type": "image/webp",
+            "form_factor": "narrow",
+            "label": "Neptun-Lite - Heti nézet"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Mai nap",
+            "short_name": "Ma",
+            "description": "Mai nap órarendjének megtekintése",
+            "url": "/?view=today",
+            "icons": [
+                {
+                    "src": "icons/shortcut-today.webp",
+                    "sizes": "96x96",
+                    "type": "image/webp",
+                    "purpose": "any"
+                }
+            ]
+        },
+        {
+            "name": "Naptár hozzáadása",
+            "short_name": "Új naptár",
+            "description": "Új Neptun naptár hozzáadása",
+            "url": "/?action=add",
+            "icons": [
+                {
+                    "src": "icons/shortcut-url.webp",
+                    "sizes": "96x96",
+                    "type": "image/webp",
+                    "purpose": "any"
+                }
+            ]
+        }
+    ],
+    "share_target": {
+        "action": "/share",
+        "method": "POST",
+        "enctype": "multipart/form-data",
+        "params": {
+            "title": "title",
+            "text": "text",
+            "url": "url"
+        }
+    },
+    "protocol_handlers": [
+        {
+            "protocol": "web+neptun",
+            "url": "/import?url=%s"
+        }
+    ],
+    "related_applications": [],
+    "prefer_related_applications": false,
+    "iarc_rating_id": "",
+    "edge_side_panel": {
+        "preferred_width": 400
+    }
+}
